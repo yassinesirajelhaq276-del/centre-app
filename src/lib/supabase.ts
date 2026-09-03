@@ -16,6 +16,7 @@ export type Student = {
   course: string;
   payment_status: 'paid' | 'pending';
   created_at: string;
+  referred_by: string | null;
 };
 
 export type Course = {
@@ -27,3 +28,22 @@ export type Course = {
 };
 
 export type PaymentStatus = 'paid' | 'pending';
+
+export type Teacher = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  specialty: string | null;
+  commission_rate: number;
+  created_at: string;
+};
+
+export type TeacherPayment = {
+  id: string;
+  teacher_id: string;
+  amount: number;
+  status: 'paid' | 'pending';
+  period: string | null;
+  created_at: string;
+};

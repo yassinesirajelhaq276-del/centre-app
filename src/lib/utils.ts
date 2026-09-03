@@ -2,12 +2,18 @@ import type { Student } from '@/lib/supabase';
 import type { Lang } from '@/lib/i18n';
 
 const ADMIN_PASSWORD = 'admin123';
+const TEACHER_PASSWORD = 'prof123';
 
 export function verifyAdminPassword(password: string): boolean {
   return password === ADMIN_PASSWORD;
 }
 
+export function verifyTeacherPassword(password: string): boolean {
+  return password === TEACHER_PASSWORD;
+}
+
 export const ADMIN_PASSWORD_HINT = 'admin123';
+export const TEACHER_PASSWORD_HINT = 'prof123';
 
 export function formatDate(iso: string, lang: Lang = 'fr'): string {
   const d = new Date(iso);
@@ -26,6 +32,14 @@ export function formatDateTime(iso: string, lang: Lang = 'fr'): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+  });
+}
+
+export function formatMonthYear(iso: string, lang: Lang = 'fr'): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', {
+    month: 'short',
+    year: '2-digit',
   });
 }
 
@@ -59,4 +73,19 @@ export function exportStudentsToCsv(
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+export function getLast6Months(lang: Lang = 'fr'): string[] {
+  const months: string[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(
+      d.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', {
+        month: 'short',
+        year: '2-digit',
+      })
+    );
+  }
+  return months;
 }

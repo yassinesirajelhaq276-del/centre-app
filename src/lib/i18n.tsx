@@ -134,6 +134,79 @@ const fr: Dict = {
   admin_toast_export_empty: 'Aucun étudiant à exporter avec les filtres actuels.',
   admin_toast_exported: '{count} étudiants exportés en CSV',
 
+  // Navbar — teacher
+  nav_teacher: 'Espace Professeur',
+
+  // Landing — Hero (redesigned)
+  hero_subtitle_v2:
+    `Une formation d'excellence en ingénierie. Des programmes pratiques, des enseignants experts, et un accompagnement personnalisé pour bâtir votre avenir.`,
+  hero_badge_v2: 'Promotion 2026 — Inscriptions ouvertes',
+  hero_trust_expert: 'Formateurs experts',
+  hero_trust_cert: 'Certification reconnue',
+  hero_trust_career: 'Accompagnement carrière',
+
+  // Charts
+  chart_enrollment_title: 'Évolutions des inscriptions',
+  chart_enrollment_subtitle: 'Inscriptions par mois sur les 6 derniers mois',
+  chart_revenue_title: 'Évolution des revenus',
+  chart_revenue_subtitle: 'Revenus mensuels (en DH)',
+  chart_month: 'Mois',
+  chart_students: 'Étudiants',
+  chart_revenue: 'Revenus',
+  chart_earnings: 'Gains',
+  chart_course_distribution: 'Répartition par cours',
+  chart_students_count: 'Nombre d\u2019étudiants',
+
+  // Teacher portal
+  teacher_login_title: 'Espace Professeur',
+  teacher_login_subtitle: 'Accédez à votre tableau de bord enseignant.',
+  teacher_login_placeholder: 'Mot de passe enseignant',
+  teacher_login_button: 'Accéder à mon espace',
+  teacher_login_demo: 'Mot de passe démo :',
+  teacher_login_error: 'Mot de passe incorrect. Veuillez réessayer.',
+  teacher_dashboard_title: 'Espace Professeur',
+  teacher_dashboard_subtitle: 'Suivez vos gains, vos parrainages et votre performance.',
+  teacher_select: 'Sélectionner un professeur',
+  teacher_welcome: 'Bienvenue, {name}',
+  teacher_specialty: 'Spécialité',
+  teacher_commission: 'Taux de commission',
+
+  // Teacher — stats
+  teacher_stat_total_referrals: 'Étudiants parrainés',
+  teacher_stat_total_earnings: 'Gains totaux',
+  teacher_stat_paid_earnings: 'Gains payés',
+  teacher_stat_pending_earnings: 'Gains en attente',
+
+  // Teacher — charts
+  teacher_chart_earnings_title: 'Évolution de vos gains',
+  teacher_chart_earnings_subtitle: 'Gains mensuels (en DH)',
+  teacher_chart_referrals_title: 'Évolution des parrainages',
+  teacher_chart_referrals_subtitle: 'Étudiants parrainés par mois',
+
+  // Teacher — referral table
+  teacher_referrals_title: 'Étudiants parrainés',
+  teacher_referrals_subtitle: 'Liste des étudiants inscrits via votre référence',
+  teacher_referrals_empty: 'Aucun étudiant parrainé pour le moment',
+  teacher_referrals_empty_hint: 'Les étudiants que vous parrainez apparaîtront ici.',
+  teacher_referral_name: 'Nom',
+  teacher_referral_phone: 'Téléphone',
+  teacher_referral_course: 'Cours',
+  teacher_referral_date: 'Date',
+  teacher_referral_status: 'Paiement',
+
+  // Teacher — payments
+  teacher_payments_title: 'Historique des paiements',
+  teacher_payments_subtitle: 'Vos versements et leur statut',
+  teacher_payment_period: 'Période',
+  teacher_payment_amount: 'Montant',
+  teacher_payment_status: 'Statut',
+  teacher_payment_date: 'Date',
+
+  // Registration — Moroccan phone
+  reg_field_phone_prefix: '+212',
+  reg_field_phone_error_ma: 'Numéro marocain invalide (6 à 12 chiffres après +212)',
+  reg_field_phone_placeholder_ma: '6 12 34 56 78',
+
   // 404
   notfound_title: "La page que vous recherchez n'existe pas.",
   notfound_go_home: "Retour à l'accueil",
@@ -255,6 +328,79 @@ const ar: Dict = {
   admin_toast_update_error: 'تعذّر تحديث حالة الدفع.',
   admin_toast_export_empty: 'لا يوجد طلاب للتصدير بالفلاتر الحالية.',
   admin_toast_exported: 'تم تصدير {count} طالب إلى CSV',
+
+  // Navbar — teacher
+  nav_teacher: 'فضاء الأساتذة',
+
+  // Landing — Hero (redesigned)
+  hero_subtitle_v2:
+    'تكوين هندسي متميز. برامج عملية، أساتذة خبراء، ومرافقة شخصية لبناء مستقبلك.',
+  hero_badge_v2: 'دفعة 2026 — التسجيل مفتوح',
+  hero_trust_expert: 'أساتذة خبراء',
+  hero_trust_cert: 'شهادة معتمدة',
+  hero_trust_career: 'مرافقة مهنية',
+
+  // Charts
+  chart_enrollment_title: 'تطور التسجيلات',
+  chart_enrollment_subtitle: 'التسجيلات الشهرية خلال آخر 6 أشهر',
+  chart_revenue_title: 'تطور الإيرادات',
+  chart_revenue_subtitle: 'الإيرادات الشهرية (بالدرهم)',
+  chart_month: 'الشهر',
+  chart_students: 'الطلاب',
+  chart_revenue: 'الإيرادات',
+  chart_earnings: 'الأرباح',
+  chart_course_distribution: 'التوزيع حسب الدورة',
+  chart_students_count: 'عدد الطلاب',
+
+  // Teacher portal
+  teacher_login_title: 'فضاء الأساتذة',
+  teacher_login_subtitle: 'الوصول إلى لوحة الأستاذ.',
+  teacher_login_placeholder: 'كلمة مرور الأستاذ',
+  teacher_login_button: 'الدخول إلى فضائي',
+  teacher_login_demo: 'كلمة مرور تجريبية:',
+  teacher_login_error: 'كلمة مرور غير صحيحة. يرجى المحاولة مرة أخرى.',
+  teacher_dashboard_title: 'فضاء الأستاذ',
+  teacher_dashboard_subtitle: 'تابع أرباحك وإحالاتك وأداءك.',
+  teacher_select: 'اختر أستاذاً',
+  teacher_welcome: 'مرحباً، {name}',
+  teacher_specialty: 'التخصص',
+  teacher_commission: 'نسبة العمولة',
+
+  // Teacher — stats
+  teacher_stat_total_referrals: 'الطلاب المُحالون',
+  teacher_stat_total_earnings: 'إجمالي الأرباح',
+  teacher_stat_paid_earnings: 'أرباح مدفوعة',
+  teacher_stat_pending_earnings: 'أرباح قيد الانتظار',
+
+  // Teacher — charts
+  teacher_chart_earnings_title: 'تطور أرباحك',
+  teacher_chart_earnings_subtitle: 'الأرباح الشهرية (بالدرهم)',
+  teacher_chart_referrals_title: 'تطور الإحالات',
+  teacher_chart_referrals_subtitle: 'الطلاب المُحالون شهرياً',
+
+  // Teacher — referral table
+  teacher_referrals_title: 'الطلاب المُحالون',
+  teacher_referrals_subtitle: 'قائمة الطلاب المسجلين عبر إحالتك',
+  teacher_referrals_empty: 'لا يوجد طلاب مُحالون حالياً',
+  teacher_referrals_empty_hint: 'الطلاب الذين تحيلهم سيظهرون هنا.',
+  teacher_referral_name: 'الاسم',
+  teacher_referral_phone: 'الهاتف',
+  teacher_referral_course: 'الدورة',
+  teacher_referral_date: 'التاريخ',
+  teacher_referral_status: 'الدفع',
+
+  // Teacher — payments
+  teacher_payments_title: 'سجل المدفوعات',
+  teacher_payments_subtitle: 'مدفوعاتك وحالتها',
+  teacher_payment_period: 'الفترة',
+  teacher_payment_amount: 'المبلغ',
+  teacher_payment_status: 'الحالة',
+  teacher_payment_date: 'التاريخ',
+
+  // Registration — Moroccan phone
+  reg_field_phone_prefix: '+212',
+  reg_field_phone_error_ma: 'رقم مغربي غير صالح (6 إلى 12 رقماً بعد +212)',
+  reg_field_phone_placeholder_ma: '6 12 34 56 78',
 
   // 404
   notfound_title: 'الصفحة التي تبحث عنها غير موجودة.',

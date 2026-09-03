@@ -16,10 +16,37 @@ import {
 } from 'lucide-react';
 
 const DEFAULT_COURSES: Course[] = [
-  { id: 'default-informatique', name: 'Génie informatique', description: null, price: 600, created_at: '' },
-  { id: 'default-civil', name: 'Génie civil', description: null, price: 550, created_at: '' },
-  { id: 'default-industriel', name: 'Génie industriel', description: null, price: 500, created_at: '' },
+  { id: 'default-informatique', name: 'Génie informatique', description: null, price: 0, created_at: '' },
+  { id: 'default-civil', name: 'Génie civil', description: null, price: 0, created_at: '' },
+  { id: 'default-industriel', name: 'Génie industriel', description: null, price: 0, created_at: '' },
 ];
+
+const MA_PHONE_PREFIX = '+212';
+
+function normalizeMaPhone(raw: string): string {
+  let digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('212')) digits = digits.slice(3);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return digits;
+}
+
+function formatMaPhone(digits: string): string {
+  const d = digits.replace(/\D/g, '');
+  const groups: string[] = [];
+  for (let i = 0; i < d.length && i < 12; i += 2) {
+    groups.push(d.slice(i, i + 2));
+  }
+  return groups.join(' ');
+}
+
+function isValidMaPhone(raw: string): boolean {
+  const digits = normalizeMaPhone(raw);
+  return digits.length >= 6 && digits.length <= 12;
+}
+
+function buildFullPhone(digits: string): string {
+  return `${MA_PHONE_PREFIX} ${formatMaPhone(digits)}`;
+}
 
 export function RegistrationPage() {
   const { t } = useI18n();
@@ -28,7 +55,7 @@ export function RegistrationPage() {
   const [coursesLoading, setCoursesLoading] = useState(true);
 
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneDigits, setPhoneDigits] = useState('');
   const [course, setCourse] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -59,10 +86,12 @@ export function RegistrationPage() {
     };
   }, []);
 
-  const phoneValid = phone.trim().length >= 6;
+  const phoneValid = isValidMaPhone(phoneDigits);
   const nameValid = fullName.trim().length >= 2;
   const courseValid = course.length > 0;
   const formValid = nameValid && phoneValid && courseValid && !coursesLoading;
+
+  const fullPhone = phoneDigits ? buildFullPhone(phoneDigits) : '';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -75,7 +104,7 @@ export function RegistrationPage() {
       .from('students')
       .insert({
         full_name: fullName.trim(),
-        phone: phone.trim(),
+        phone: fullPhone,
         course,
         payment_status: 'pending',
       });
@@ -89,7 +118,7 @@ export function RegistrationPage() {
 
   function registerAnother() {
     setFullName('');
-    setPhone('');
+    setPhoneDigits('');
     setCourse('');
     setSuccess(false);
   }
@@ -129,7 +158,7 @@ export function RegistrationPage() {
               <div className="rounded-xl bg-slate-50 p-5">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <SummaryRow label={t('reg_summary_name')} value={fullName} />
-                  <SummaryRow label={t('reg_summary_phone')} value={phone} />
+                  <SummaryRow label={t('reg_summary_phone')} value={fullPhone} />
                   <SummaryRow label={t('reg_summary_course')} value={course} />
                   <SummaryRow
                     label={t('reg_summary_payment')}
@@ -187,19 +216,27 @@ export function RegistrationPage() {
                   />
                 </Field>
 
+                {/* Moroccan phone field with fixed +212 prefix */}
                 <Field
                   label={t('reg_field_phone')}
                   icon={<Phone className="h-4 w-4" />}
-                  error={phone.length > 0 && !phoneValid ? t('reg_field_phone_error') : ''}
+                  error={phoneDigits.length > 0 && !phoneValid ? t('reg_field_phone_error_ma') : ''}
                 >
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder={t('reg_field_phone_placeholder')}
-                    className="w-full bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus:outline-none"
-                    autoComplete="tel"
-                  />
+                  <div className="flex items-center gap-2">
+                    <span className="shrink-0 text-base font-semibold text-slate-500 select-none">
+                      {MA_PHONE_PREFIX}
+                    </span>
+                    <span className="h-5 w-px bg-slate-200" />
+                    <input
+                      type="tel"
+                      value={formatMaPhone(phoneDigits)}
+                      onChange={(e) => setPhoneDigits(normalizeMaPhone(e.target.value))}
+                      placeholder={t('reg_field_phone_placeholder_ma')}
+                      className="w-full bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                      autoComplete="tel"
+                      inputMode="numeric"
+                    />
+                  </div>
                 </Field>
 
                 <Field
@@ -219,7 +256,7 @@ export function RegistrationPage() {
                     </option>
                     {courses.map((c) => (
                       <option key={c.id} value={c.name}>
-                        {c.name} — ${c.price}
+                        {c.name}
                       </option>
                     ))}
                   </select>

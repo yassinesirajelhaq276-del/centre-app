@@ -1,10 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { supabase, type Student, type Course } from '@/lib/supabase';
 import { useToast } from '@/lib/router';
 import { navigate } from '@/lib/router';
 import { useI18n } from '@/lib/i18n';
 import { Navbar, Toast } from '@/components/Navbar';
-import { formatDate, exportStudentsToCsv, verifyAdminPassword } from '@/lib/utils';
+import { formatDate, exportStudentsToCsv, verifyAdminPassword, getLast6Months } from '@/lib/utils';
 import {
   Lock,
   Loader2,
@@ -19,9 +33,13 @@ import {
   RefreshCw,
   Filter,
   Phone,
+  TrendingUp,
+  PieChart as PieIcon,
 } from 'lucide-react';
 
 const AUTH_KEY = 'lumen_admin_authed';
+
+const PIE_COLORS = ['#0ea5e9', '#14b8a6', '#f59e0b'];
 
 type StatusFilter = 'all' | 'paid' | 'pending';
 
@@ -215,6 +233,32 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     };
   }, [students, courses]);
 
+  // Chart data: enrollments over last 6 months
+  const enrollmentData = useMemo(() => {
+    const months = getLast6Months(lang);
+    return months.map((label) => {
+      const [m, y] = label.split(' ');
+      const count = students.filter((s) => {
+        const d = new Date(s.created_at);
+        const monthLabel = d.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', {
+          month: 'short',
+          year: '2-digit',
+        });
+        return monthLabel === label;
+      }).length;
+      return { month: label, students: count };
+    });
+  }, [students, lang]);
+
+  // Chart data: course distribution
+  const courseDistribution = useMemo(() => {
+    return courses.map((c, i) => ({
+      name: c.name,
+      value: students.filter((s) => s.course === c.name).length,
+      color: PIE_COLORS[i % PIE_COLORS.length],
+    }));
+  }, [students, courses]);
+
   function handleExport() {
     if (filtered.length === 0) {
       show(t('admin_toast_export_empty'), 'error');
@@ -276,7 +320,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           />
           <StatCard
             label={t('admin_stat_revenue')}
-            value={`$${stats.revenue.toLocaleString()}`}
+            value={`${stats.revenue.toLocaleString()} DH`}
             icon={<DollarSign className="h-5 w-5" />}
             accent="emerald"
           />
@@ -292,6 +336,95 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             icon={<Clock className="h-5 w-5" />}
             accent="amber"
           />
+        </div>
+
+        {/* Charts */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-5">
+          {/* Enrollment trend */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-sky-600" />
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  {t('chart_enrollment_title')}
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-500">{t('chart_enrollment_subtitle')}</p>
+              </div>
+            </div>
+            <div className="mt-6 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={enrollmentData}>
+                  <defs>
+                    <linearGradient id="enrollGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '13px' }}
+                    labelStyle={{ color: '#475569' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="students"
+                    stroke="#0ea5e9"
+                    strokeWidth={2}
+                    fill="url(#enrollGrad)"
+                    name={t('chart_students')}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Course distribution */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+            <div className="flex items-center gap-2">
+              <PieIcon className="h-5 w-5 text-teal-600" />
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  {t('chart_course_distribution')}
+                </h3>
+              </div>
+            </div>
+            <div className="mt-4 h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={courseDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={3}
+                    dataKey="value"
+                    nameKey="name"
+                  >
+                    {courseDistribution.map((entry, idx) => (
+                      <Cell key={idx} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '13px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 space-y-1.5">
+              {courseDistribution.map((c) => (
+                <div key={c.name} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                    <span className="text-slate-600">{c.name}</span>
+                  </div>
+                  <span className="font-semibold text-slate-900">{c.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Toolbar */}

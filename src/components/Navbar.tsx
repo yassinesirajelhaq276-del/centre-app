@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRoute, navigate } from '@/lib/router';
 import { useI18n } from '@/lib/i18n';
-import { GraduationCap, LayoutDashboard, UserPlus, Languages } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, UserPlus, Languages, Briefcase } from 'lucide-react';
 
 export function Navbar() {
   const route = useRoute();
@@ -17,6 +17,7 @@ export function Navbar() {
 
   const isAdmin = route.startsWith('/admin');
   const isInscription = route.startsWith('/inscription');
+  const isTeacher = route.startsWith('/professeur');
 
   return (
     <header
@@ -41,7 +42,7 @@ export function Navbar() {
             </span>
           </button>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               onClick={toggleLang}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
@@ -60,7 +61,18 @@ export function Navbar() {
               }`}
             >
               <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('nav_register')}</span>
+              <span className="hidden lg:inline">{t('nav_register')}</span>
+            </button>
+            <button
+              onClick={() => navigate('/professeur')}
+              className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isTeacher
+                  ? 'bg-teal-50 text-teal-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <Briefcase className="h-4 w-4" />
+              <span className="hidden lg:inline">{t('nav_teacher')}</span>
             </button>
             <button
               onClick={() => navigate('/admin')}
@@ -71,7 +83,7 @@ export function Navbar() {
               }`}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('nav_admin')}</span>
+              <span className="hidden lg:inline">{t('nav_admin')}</span>
             </button>
           </div>
         </div>

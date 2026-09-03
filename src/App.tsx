@@ -4,6 +4,7 @@ import { I18nProvider } from '@/lib/i18n';
 import { LandingPage } from '@/pages/LandingPage';
 import { RegistrationPage } from '@/pages/RegistrationPage';
 import { AdminPage } from '@/pages/AdminPage';
+import { TeacherPage } from '@/pages/TeacherPage';
 
 function NotFound() {
   const { t } = useI18n();
@@ -31,6 +32,8 @@ export default function App() {
     page = <RegistrationPage />;
   } else if (route.startsWith('/admin')) {
     page = <AdminPage />;
+  } else if (route.startsWith('/professeur')) {
+    page = <TeacherPage />;
   } else {
     page = <NotFound />;
   }
