@@ -1,4 +1,5 @@
 import type { Student } from '@/lib/supabase';
+import type { Lang } from '@/lib/i18n';
 
 const ADMIN_PASSWORD = 'admin123';
 
@@ -8,18 +9,18 @@ export function verifyAdminPassword(password: string): boolean {
 
 export const ADMIN_PASSWORD_HINT = 'admin123';
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string, lang: Lang = 'fr'): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString(lang === 'ar' ? 'ar' : 'fr-FR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
 }
 
-export function formatDateTime(iso: string): string {
+export function formatDateTime(iso: string, lang: Lang = 'fr'): string {
   const d = new Date(iso);
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString(lang === 'ar' ? 'ar' : 'fr-FR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -28,14 +29,23 @@ export function formatDateTime(iso: string): string {
   });
 }
 
-export function exportStudentsToCsv(students: Student[], filename = 'students.csv') {
-  const headers = ['Full Name', 'Phone', 'Course', 'Payment Status', 'Registration Date'];
+export function exportStudentsToCsv(
+  students: Student[],
+  lang: Lang = 'fr',
+  filename = 'students.csv'
+) {
+  const headers =
+    lang === 'ar'
+      ? ['الاسم الكامل', 'الهاتف', 'الدورة', 'حالة الدفع', 'تاريخ التسجيل']
+      : [`Nom complet`, `Téléphone`, `Cours`, `Statut de paiement`, `Date d'inscription`];
+
   const escape = (value: string) => {
     const v = value.replace(/"/g, '""');
     return /[",\n]/.test(v) ? `"${v}"` : v;
   };
+
   const rows = students.map((s) =>
-    [s.full_name, s.phone, s.course, s.payment_status, formatDate(s.created_at)]
+    [s.full_name, s.phone, s.course, s.payment_status, formatDate(s.created_at, lang)]
       .map(escape)
       .join(',')
   );

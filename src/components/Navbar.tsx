@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useRoute, navigate } from '@/lib/router';
-import { GraduationCap, LayoutDashboard, UserPlus } from 'lucide-react';
+import { useI18n } from '@/lib/i18n';
+import { GraduationCap, LayoutDashboard, UserPlus, Languages } from 'lucide-react';
 
 export function Navbar() {
   const route = useRoute();
+  const { t, lang, toggleLang } = useI18n();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -34,11 +36,21 @@ export function Navbar() {
               <GraduationCap className="h-5 w-5" />
             </span>
             <span className="text-lg font-semibold tracking-tight text-slate-900">
-              Lumen<span className="text-sky-600">Academy</span>
+              {t('brand_name')}
+              <span className="text-sky-600">{t('brand_highlight')}</span>
             </span>
           </button>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={toggleLang}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Switch language"
+              title={lang === 'fr' ? 'العربية' : 'Français'}
+            >
+              <Languages className="h-4 w-4" />
+              <span className="font-semibold">{lang === 'fr' ? t('lang_ar') : t('lang_fr')}</span>
+            </button>
             <button
               onClick={() => navigate('/inscription')}
               className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
@@ -48,7 +60,7 @@ export function Navbar() {
               }`}
             >
               <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Register</span>
+              <span className="hidden sm:inline">{t('nav_register')}</span>
             </button>
             <button
               onClick={() => navigate('/admin')}
@@ -59,7 +71,7 @@ export function Navbar() {
               }`}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
+              <span className="hidden sm:inline">{t('nav_admin')}</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { navigate } from '@/lib/router';
+import { useI18n } from '@/lib/i18n';
 import { supabase, type Course } from '@/lib/supabase';
 import {
   ArrowRight,
@@ -11,7 +12,35 @@ import {
   Award,
 } from 'lucide-react';
 
+const STATIC_COURSES: Course[] = [
+  {
+    id: 'static-informatique',
+    name: 'Génie informatique',
+    description:
+      "Maîtrisez les fondamentaux de la programmation, des réseaux et du développement logiciel pour concevoir des solutions informatiques innovantes.",
+    price: 600,
+    created_at: '',
+  },
+  {
+    id: 'static-civil',
+    name: 'Génie civil',
+    description:
+      "Apprenez la conception, la construction et la gestion de projets d'infrastructure, des structures en béton aux ouvrages d'art.",
+    price: 550,
+    created_at: '',
+  },
+  {
+    id: 'static-industriel',
+    name: 'Génie industriel',
+    description:
+      "Optimisez les processus de production, la logistique et la gestion de la qualité pour améliorer la performance des systèmes industriels.",
+    price: 500,
+    created_at: '',
+  },
+];
+
 export function LandingPage() {
+  const { t, lang } = useI18n();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,15 +51,35 @@ export function LandingPage() {
         .from('courses')
         .select('*')
         .order('name', { ascending: true });
-      if (active) {
-        setCourses((data as Course[]) ?? []);
-        setLoading(false);
-      }
+      if (!active) return;
+      const dbCourses = (data as Course[]) ?? [];
+      setCourses(dbCourses.length > 0 ? dbCourses : STATIC_COURSES);
+      setLoading(false);
     })();
     return () => {
       active = false;
     };
   }, []);
+
+  const courseDescriptions: Record<string, Record<string, string>> = {
+    'Génie informatique': {
+      fr: "Maîtrisez les fondamentaux de la programmation, des réseaux et du développement logiciel pour concevoir des solutions informatiques innovantes.",
+      ar: 'أتقن أساسيات البرمجة والشبكات وتطوير البرمجيات لتصميم حلول معلوماتية مبتكرة.',
+    },
+    'Génie civil': {
+      fr: "Apprenez la conception, la construction et la gestion de projets d'infrastructure, des structures en béton aux ouvrages d'art.",
+      ar: 'تعلم تصميم وبناء وإدارة مشاريع البنية التحتية، من الهياكل الخرسانية إلى المنشآت الفنية.',
+    },
+    'Génie industriel': {
+      fr: "Optimisez les processus de production, la logistique et la gestion de la qualité pour améliorer la performance des systèmes industriels.",
+      ar: 'حسّن عمليات الإنتاج واللوجستيك وإدارة الجودة لرفع أداء الأنظمة الصناعية.',
+    },
+  };
+
+  function getDescription(course: Course): string {
+    const localized = courseDescriptions[course.name]?.[lang];
+    return localized ?? course.description ?? '';
+  }
 
   return (
     <div className="bg-white">
@@ -43,39 +92,37 @@ export function LandingPage() {
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-xs font-medium text-sky-700">
               <Sparkles className="h-3.5 w-3.5" />
-              Enrollment is open for the 2026 cohort
+              {t('hero_badge')}
             </span>
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl">
-              Build skills that move{' '}
+              {t('hero_title_1')}{' '}
               <span className="bg-gradient-to-r from-sky-600 to-teal-500 bg-clip-text text-transparent">
-                your career forward
+                {t('hero_title_2')}
               </span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-slate-600">
-              Lumen Academy is a modern training center offering hands-on courses
-              in development, design, marketing and more. Reserve your seat in
-              under a minute — no account required.
+              {t('hero_subtitle')}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button
                 onClick={() => navigate('/inscription')}
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3.5 text-base font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md sm:w-auto"
               >
-                Register for a course
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                {t('hero_cta_register')}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
               </button>
               <button
                 onClick={() => navigate('/admin')}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-base font-semibold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
               >
-                Admin dashboard
+                {t('hero_cta_admin')}
               </button>
             </div>
 
             <div className="mt-12 grid grid-cols-3 gap-4 text-center sm:gap-8">
-              <Stat value="8" label="Active courses" />
-              <Stat value="1,200+" label="Students trained" />
-              <Stat value="94%" label="Completion rate" />
+              <Stat value="3" label={t('stat_courses')} />
+              <Stat value="1 200+" label={t('stat_students')} />
+              <Stat value="94%" label={t('stat_completion')} />
             </div>
           </div>
         </div>
@@ -86,23 +133,21 @@ export function LandingPage() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Explore our courses
+              {t('courses_title')}
             </h2>
-            <p className="mt-2 text-slate-600">
-              Taught by industry practitioners with real-world projects.
-            </p>
+            <p className="mt-2 text-slate-600">{t('courses_subtitle')}</p>
           </div>
           <button
             onClick={() => navigate('/inscription')}
             className="hidden items-center gap-1 text-sm font-semibold text-sky-600 hover:text-sky-700 sm:inline-flex"
           >
-            Enroll now <ArrowRight className="h-4 w-4" />
+            {t('courses_enroll_now')} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </button>
         </div>
 
         {loading ? (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-44 animate-pulse rounded-2xl bg-slate-100" />
             ))}
           </div>
@@ -118,7 +163,7 @@ export function LandingPage() {
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-slate-900">{c.name}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">
-                  {c.description}
+                  {getDescription(c)}
                 </p>
                 <div className="mt-5 flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-900">
@@ -128,7 +173,7 @@ export function LandingPage() {
                     onClick={() => navigate('/inscription')}
                     className="inline-flex items-center gap-1 text-sm font-semibold text-sky-600 transition-colors hover:text-sky-700"
                   >
-                    Enroll <ArrowRight className="h-3.5 w-3.5" />
+                    {t('courses_enroll')} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                   </button>
                 </div>
               </div>
@@ -143,18 +188,18 @@ export function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-3">
             <Feature
               icon={<Users className="h-5 w-5" />}
-              title="Expert instructors"
-              body="Learn from professionals actively working in the field, not just theorists."
+              title={t('feature_instructors_title')}
+              body={t('feature_instructors_body')}
             />
             <Feature
               icon={<Clock className="h-5 w-5" />}
-              title="Flexible schedule"
-              body="Evening and weekend batches designed for working professionals and students."
+              title={t('feature_schedule_title')}
+              body={t('feature_schedule_body')}
             />
             <Feature
               icon={<Award className="h-5 w-5" />}
-              title="Recognized certificate"
-              body="Earn a completion certificate valued by employers across the industry."
+              title={t('feature_certificate_title')}
+              body={t('feature_certificate_body')}
             />
           </div>
         </div>
@@ -168,18 +213,15 @@ export function LandingPage() {
           <div className="relative">
             <ShieldCheck className="mx-auto h-8 w-8 text-white/90" />
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Your seat is one form away
+              {t('cta_title')}
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sky-50">
-              Register now and our team will confirm your enrollment within 24
-              hours. Payment can be settled later.
-            </p>
+            <p className="mx-auto mt-3 max-w-xl text-sky-50">{t('cta_body')}</p>
             <button
               onClick={() => navigate('/inscription')}
               className="group mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-base font-semibold text-slate-900 shadow-sm transition-all hover:bg-slate-100 hover:shadow-md"
             >
-              Start registration
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              {t('cta_button')}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
             </button>
           </div>
         </div>

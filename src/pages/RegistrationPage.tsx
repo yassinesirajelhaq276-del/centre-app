@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase, type Course } from '@/lib/supabase';
 import { useToast } from '@/lib/router';
 import { navigate } from '@/lib/router';
+import { useI18n } from '@/lib/i18n';
 import { Navbar, Toast } from '@/components/Navbar';
 import {
   UserPlus,
@@ -14,7 +15,14 @@ import {
   ChevronDown,
 } from 'lucide-react';
 
+const DEFAULT_COURSES: Course[] = [
+  { id: 'default-informatique', name: 'Génie informatique', description: null, price: 600, created_at: '' },
+  { id: 'default-civil', name: 'Génie civil', description: null, price: 550, created_at: '' },
+  { id: 'default-industriel', name: 'Génie industriel', description: null, price: 500, created_at: '' },
+];
+
 export function RegistrationPage() {
+  const { t } = useI18n();
   const { toast, show } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
@@ -28,12 +36,21 @@ export function RegistrationPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await supabase
-        .from('courses')
-        .select('*')
-        .order('name', { ascending: true });
+      let result: Course[] = [];
+      try {
+        const { data } = await supabase
+          .from('courses')
+          .select('*')
+          .order('name', { ascending: true });
+        result = (data as Course[]) ?? [];
+      } catch {
+        result = [];
+      }
       if (active) {
-        setCourses((data as Course[]) ?? []);
+        if (result.length === 0) {
+          result = DEFAULT_COURSES;
+        }
+        setCourses(result);
         setCoursesLoading(false);
       }
     })();
@@ -50,7 +67,7 @@ export function RegistrationPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!formValid) {
-      show('Please fill in all fields correctly.', 'error');
+      show(t('reg_error_fields'), 'error');
       return;
     }
     setSubmitting(true);
@@ -64,7 +81,7 @@ export function RegistrationPage() {
       });
     setSubmitting(false);
     if (error) {
-      show('Something went wrong. Please try again.', 'error');
+      show(t('reg_error_generic'), 'error');
       return;
     }
     setSuccess(true);
@@ -87,8 +104,8 @@ export function RegistrationPage() {
           onClick={() => navigate('/')}
           className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to home
+          <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+          {t('reg_back_home')}
         </button>
 
         {success ? (
@@ -98,24 +115,25 @@ export function RegistrationPage() {
                 <CheckCircle2 className="h-8 w-8 text-white" />
               </div>
               <h1 className="mt-5 text-2xl font-bold text-white sm:text-3xl">
-                Registration received!
+                {t('reg_success_title')}
               </h1>
               <p className="mx-auto mt-3 max-w-md text-emerald-50">
-                Thanks, {fullName.split(' ')[0]}. Your seat for{' '}
-                <span className="font-semibold">{course}</span> is reserved. Payment
-                status is <span className="font-semibold">Pending</span> — our team
-                will reach out shortly.
+                {t('reg_success_body', {
+                  name: fullName.split(' ')[0],
+                  course,
+                  status: t('reg_payment_pending'),
+                })}
               </p>
             </div>
             <div className="px-8 py-7">
               <div className="rounded-xl bg-slate-50 p-5">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <SummaryRow label="Name" value={fullName} />
-                  <SummaryRow label="Phone" value={phone} />
-                  <SummaryRow label="Course" value={course} />
+                  <SummaryRow label={t('reg_summary_name')} value={fullName} />
+                  <SummaryRow label={t('reg_summary_phone')} value={phone} />
+                  <SummaryRow label={t('reg_summary_course')} value={course} />
                   <SummaryRow
-                    label="Payment"
-                    value="Pending"
+                    label={t('reg_summary_payment')}
+                    value={t('reg_payment_pending')}
                     badgeClass="bg-amber-100 text-amber-700"
                   />
                 </div>
@@ -125,13 +143,13 @@ export function RegistrationPage() {
                   onClick={registerAnother}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
                 >
-                  Register another student
+                  {t('reg_register_another')}
                 </button>
                 <button
                   onClick={() => navigate('/')}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800"
                 >
-                  Back to home
+                  {t('reg_back_home')}
                 </button>
               </div>
             </div>
@@ -145,11 +163,9 @@ export function RegistrationPage() {
                 </span>
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                    Student registration
+                    {t('reg_title')}
                   </h1>
-                  <p className="mt-0.5 text-sm text-slate-500">
-                    Fill in your details to reserve a seat. It takes less than a minute.
-                  </p>
+                  <p className="mt-0.5 text-sm text-slate-500">{t('reg_subtitle')}</p>
                 </div>
               </div>
             </div>
@@ -157,37 +173,37 @@ export function RegistrationPage() {
             <form onSubmit={handleSubmit} className="px-8 py-7" noValidate>
               <div className="space-y-5">
                 <Field
-                  label="Full name"
+                  label={t('reg_field_name')}
                   icon={<User className="h-4 w-4" />}
-                  error={fullName.length > 0 && !nameValid ? 'Enter at least 2 characters' : ''}
+                  error={fullName.length > 0 && !nameValid ? t('reg_field_name_error') : ''}
                 >
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Jordan Smith"
+                    placeholder={t('reg_field_name_placeholder')}
                     className="w-full bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     autoComplete="name"
                   />
                 </Field>
 
                 <Field
-                  label="Phone number"
+                  label={t('reg_field_phone')}
                   icon={<Phone className="h-4 w-4" />}
-                  error={phone.length > 0 && !phoneValid ? 'Enter a valid phone number' : ''}
+                  error={phone.length > 0 && !phoneValid ? t('reg_field_phone_error') : ''}
                 >
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 415 555 0182"
+                    placeholder={t('reg_field_phone_placeholder')}
                     className="w-full bg-transparent text-base text-slate-900 placeholder:text-slate-400 focus:outline-none"
                     autoComplete="tel"
                   />
                 </Field>
 
                 <Field
-                  label="Select a course"
+                  label={t('reg_field_course')}
                   icon={<BookOpen className="h-4 w-4" />}
                   trailing={<ChevronDown className="h-4 w-4 text-slate-400" />}
                   error=""
@@ -199,7 +215,7 @@ export function RegistrationPage() {
                     className="w-full appearance-none bg-transparent text-base text-slate-900 focus:outline-none disabled:opacity-60"
                   >
                     <option value="" disabled>
-                      {coursesLoading ? 'Loading courses…' : 'Choose a course'}
+                      {coursesLoading ? t('reg_field_course_loading') : t('reg_field_course_placeholder')}
                     </option>
                     {courses.map((c) => (
                       <option key={c.id} value={c.name}>
@@ -211,8 +227,7 @@ export function RegistrationPage() {
               </div>
 
               <div className="mt-7 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Payment is collected later. Your registration starts with a{' '}
-                <span className="font-semibold">Pending</span> payment status.
+                {t('reg_payment_notice', { status: t('reg_payment_pending') })}
               </div>
 
               <button
@@ -223,12 +238,12 @@ export function RegistrationPage() {
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Submitting…
+                    {t('reg_submitting')}
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    Submit registration
+                    {t('reg_submit')}
                   </>
                 )}
               </button>

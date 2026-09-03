@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase, type Student, type Course } from '@/lib/supabase';
 import { useToast } from '@/lib/router';
 import { navigate } from '@/lib/router';
+import { useI18n } from '@/lib/i18n';
 import { Navbar, Toast } from '@/components/Navbar';
 import { formatDate, exportStudentsToCsv, verifyAdminPassword } from '@/lib/utils';
 import {
@@ -25,6 +26,7 @@ const AUTH_KEY = 'lumen_admin_authed';
 type StatusFilter = 'all' | 'paid' | 'pending';
 
 export function AdminPage() {
+  const { t } = useI18n();
   const [authed, setAuthed] = useState<boolean>(
     () => sessionStorage.getItem(AUTH_KEY) === '1'
   );
@@ -39,6 +41,7 @@ export function AdminPage() {
 }
 
 function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
+  const { t } = useI18n();
   const { toast, show } = useToast();
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +55,7 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
       sessionStorage.setItem(AUTH_KEY, '1');
       onAuthed();
     } else {
-      show('Incorrect password. Please try again.', 'error');
+      show(t('admin_login_error'), 'error');
     }
   }
 
@@ -68,22 +71,22 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
                 <Lock className="h-6 w-6 text-white" />
               </div>
               <h1 className="mt-6 text-center text-2xl font-bold text-white">
-                Admin access
+                {t('admin_login_title')}
               </h1>
               <p className="mt-2 text-center text-sm text-slate-400">
-                Enter your password to manage student registrations.
+                {t('admin_login_subtitle')}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                    Password
+                    {t('admin_login_password')}
                   </label>
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter admin password"
+                    placeholder={t('admin_login_placeholder')}
                     autoFocus
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white placeholder:text-slate-500 transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
                   />
@@ -96,19 +99,19 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
                   {submitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Verifying…
+                      {t('admin_login_verifying')}
                     </>
                   ) : (
                     <>
                       <Lock className="h-4 w-4" />
-                      Unlock dashboard
+                      {t('admin_login_button')}
                     </>
                   )}
                 </button>
               </form>
 
               <p className="mt-6 rounded-lg bg-white/5 px-3 py-2 text-center text-xs text-slate-400">
-                Demo password: <span className="font-mono font-semibold text-sky-300">admin123</span>
+                {t('admin_login_demo')} <span className="font-mono font-semibold text-sky-300">admin123</span>
               </p>
             </div>
           </div>
@@ -116,8 +119,8 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
             onClick={() => navigate('/')}
             className="mt-6 flex w-full items-center justify-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+            {t('reg_back_home')}
           </button>
         </div>
       </main>
@@ -126,6 +129,7 @@ function AdminLogin({ onAuthed }: { onAuthed: () => void }) {
 }
 
 function AdminDashboard({ onLogout }: { onLogout: () => void }) {
+  const { t, lang } = useI18n();
   const { toast, show } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -161,7 +165,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
     setRefreshing(true);
     await load();
     setRefreshing(false);
-    show('Data refreshed');
+    show(t('admin_toast_refreshed'));
   }
 
   async function togglePayment(student: Student) {
@@ -173,13 +177,16 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       .eq('id', student.id);
     setTogglingId(null);
     if (error) {
-      show('Could not update payment status.', 'error');
+      show(t('admin_toast_update_error'), 'error');
       return;
     }
     setStudents((prev) =>
       prev.map((s) => (s.id === student.id ? { ...s, payment_status: next } : s))
     );
-    show(`Marked ${student.full_name} as ${next === 'paid' ? 'Paid' : 'Pending'}`);
+    show(t('admin_toast_marked', {
+      name: student.full_name,
+      status: next === 'paid' ? t('admin_payment_paid') : t('reg_payment_pending'),
+    }));
   }
 
   const filtered = useMemo(() => {
@@ -210,11 +217,11 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
 
   function handleExport() {
     if (filtered.length === 0) {
-      show('No students to export with current filters.', 'error');
+      show(t('admin_toast_export_empty'), 'error');
       return;
     }
-    exportStudentsToCsv(filtered);
-    show(`Exported ${filtered.length} students to CSV`);
+    exportStudentsToCsv(filtered, lang);
+    show(t('admin_toast_exported', { count: String(filtered.length) }));
   }
 
   if (loading) {
@@ -237,11 +244,9 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Admin dashboard
+              {t('admin_dashboard_title')}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Manage student registrations and payments.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{t('admin_dashboard_subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -249,14 +254,14 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
               className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
             >
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{t('admin_refresh')}</span>
             </button>
             <button
               onClick={onLogout}
               className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
             >
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign out</span>
+              <span className="hidden sm:inline">{t('admin_signout')}</span>
             </button>
           </div>
         </div>
@@ -264,25 +269,25 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         {/* Stat cards */}
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label="Total students"
+            label={t('admin_stat_total')}
             value={stats.total.toString()}
             icon={<Users className="h-5 w-5" />}
             accent="sky"
           />
           <StatCard
-            label="Total revenue"
+            label={t('admin_stat_revenue')}
             value={`$${stats.revenue.toLocaleString()}`}
             icon={<DollarSign className="h-5 w-5" />}
             accent="emerald"
           />
           <StatCard
-            label="Paid"
+            label={t('admin_stat_paid')}
             value={stats.paid.toString()}
             icon={<CheckCircle2 className="h-5 w-5" />}
             accent="teal"
           />
           <StatCard
-            label="Pending"
+            label={t('admin_stat_pending')}
             value={stats.pending.toString()}
             icon={<Clock className="h-5 w-5" />}
             accent="amber"
@@ -298,7 +303,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name…"
+                placeholder={t('admin_search_placeholder')}
                 className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 transition-colors focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
               />
             </div>
@@ -308,16 +313,16 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 value={statusFilter}
                 onChange={(v) => setStatusFilter(v as StatusFilter)}
                 options={[
-                  { value: 'all', label: 'All statuses' },
-                  { value: 'paid', label: 'Paid' },
-                  { value: 'pending', label: 'Pending' },
+                  { value: 'all', label: t('admin_filter_all_statuses') },
+                  { value: 'paid', label: t('admin_filter_paid') },
+                  { value: 'pending', label: t('admin_filter_pending') },
                 ]}
               />
               <FilterSelect
                 value={courseFilter}
                 onChange={setCourseFilter}
                 options={[
-                  { value: 'all', label: 'All courses' },
+                  { value: 'all', label: t('admin_filter_all_courses') },
                   ...courses.map((c) => ({ value: c.name, label: c.name })),
                 ]}
               />
@@ -326,7 +331,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3.5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
               >
                 <Download className="h-4 w-4" />
-                Export CSV
+                {t('admin_export_csv')}
               </button>
             </div>
           </div>
@@ -334,8 +339,8 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           {/* Result count */}
           <div className="flex items-center justify-between px-4 pt-3 text-xs text-slate-500">
             <span>
-              Showing <span className="font-semibold text-slate-700">{filtered.length}</span>{' '}
-              of {students.length} students
+              {t('admin_showing')} <span className="font-semibold text-slate-700">{filtered.length}</span>{' '}
+              {t('admin_of')} {students.length} {t('admin_students')}
             </span>
             {(search || statusFilter !== 'all' || courseFilter !== 'all') && (
               <button
@@ -346,7 +351,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 }}
                 className="font-medium text-sky-600 hover:text-sky-700"
               >
-                Clear filters
+                {t('admin_clear_filters')}
               </button>
             )}
           </div>
@@ -358,23 +363,21 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                   <Users className="h-6 w-6" />
                 </div>
-                <p className="mt-3 text-sm font-medium text-slate-700">No students found</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Try adjusting your search or filters.
-                </p>
+                <p className="mt-3 text-sm font-medium text-slate-700">{t('admin_no_students')}</p>
+                <p className="mt-1 text-xs text-slate-500">{t('admin_no_students_hint')}</p>
               </div>
             ) : (
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-                    <th className="px-3 py-3 font-semibold">Name</th>
-                    <th className="hidden px-3 py-3 font-semibold sm:table-cell">Phone</th>
-                    <th className="px-3 py-3 font-semibold">Course</th>
+                    <th className="px-3 py-3 font-semibold">{t('admin_table_name')}</th>
+                    <th className="hidden px-3 py-3 font-semibold sm:table-cell">{t('admin_table_phone')}</th>
+                    <th className="px-3 py-3 font-semibold">{t('admin_table_course')}</th>
                     <th className="hidden px-3 py-3 font-semibold md:table-cell">
-                      Registered
+                      {t('admin_table_registered')}
                     </th>
-                    <th className="px-3 py-3 font-semibold">Payment</th>
-                    <th className="px-3 py-3 text-right font-semibold">Action</th>
+                    <th className="px-3 py-3 font-semibold">{t('admin_table_payment')}</th>
+                    <th className="px-3 py-3 text-right font-semibold">{t('admin_table_action')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -408,10 +411,10 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                         </span>
                       </td>
                       <td className="hidden px-3 py-3 text-slate-500 md:table-cell">
-                        {formatDate(s.created_at)}
+                        {formatDate(s.created_at, lang)}
                       </td>
                       <td className="px-3 py-3">
-                        <PaymentBadge status={s.payment_status} />
+                        <PaymentBadge status={s.payment_status} t={t} />
                       </td>
                       <td className="px-3 py-3 text-right">
                         <button
@@ -428,12 +431,12 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                           ) : s.payment_status === 'paid' ? (
                             <>
                               <Clock className="h-3.5 w-3.5" />
-                              Mark pending
+                              {t('admin_mark_pending')}
                             </>
                           ) : (
                             <>
                               <CheckCircle2 className="h-3.5 w-3.5" />
-                              Mark paid
+                              {t('admin_mark_paid')}
                             </>
                           )}
                         </button>
@@ -489,16 +492,22 @@ function StatCard({
   );
 }
 
-function PaymentBadge({ status }: { status: 'paid' | 'pending' }) {
+function PaymentBadge({
+  status,
+  t,
+}: {
+  status: 'paid' | 'pending';
+  t: (key: string) => string;
+}) {
   return status === 'paid' ? (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-      Paid
+      {t('admin_payment_paid')}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-      Pending
+      {t('reg_payment_pending')}
     </span>
   );
 }
